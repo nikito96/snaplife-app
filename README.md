@@ -1,0 +1,2 @@
+# snaplife-app
+Diploma project
