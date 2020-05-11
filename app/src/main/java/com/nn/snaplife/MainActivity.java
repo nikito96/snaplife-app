@@ -11,7 +11,10 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.Toast;
+
+import com.nn.snaplife.services.InputValidator;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -33,6 +36,7 @@ public class MainActivity extends AppCompatActivity {
     private EditText passwordEditText;
     private Button loginButton;
     private Button registerButton;
+    private ProgressBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,7 +50,15 @@ public class MainActivity extends AppCompatActivity {
                 String email = emailEditText.getText().toString();
                 String password = passwordEditText.getText().toString();
 
-                new LoginAsyncTask(email, password).execute();
+                boolean validationResult = InputValidator.validateLogin(email, password);
+
+                if (validationResult) {
+                    new LoginAsyncTask(email, password).execute();
+                }
+
+                Toast invalidLoginToast = Toast.makeText(getApplicationContext(),
+                        "Wrong credentials!", Toast.LENGTH_LONG);
+                invalidLoginToast.show();
             }
         });
 
@@ -64,6 +76,7 @@ public class MainActivity extends AppCompatActivity {
         this.passwordEditText = findViewById(R.id.passwordEditText);
         this.loginButton = findViewById(R.id.loginButton);
         this.registerButton = findViewById(R.id.registerButton);
+        this.progressBar = findViewById(R.id.progressBar);
     }
 
     private class LoginAsyncTask extends AsyncTask<Void, Void, Void> {
@@ -74,6 +87,12 @@ public class MainActivity extends AppCompatActivity {
         LoginAsyncTask(String email, String password) {
             this.email = email;
             this.password = password;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            MainActivity.this.progressBar.setVisibility(ProgressBar.VISIBLE);
         }
 
         @Override
@@ -127,6 +146,12 @@ public class MainActivity extends AppCompatActivity {
                 conn.disconnect();
             }
             return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            MainActivity.this.progressBar.setVisibility(ProgressBar.INVISIBLE);
         }
     }
 }

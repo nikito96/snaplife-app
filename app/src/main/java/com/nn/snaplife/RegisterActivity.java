@@ -8,6 +8,10 @@ import android.util.JsonReader;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
+import android.widget.Toast;
+
+import com.nn.snaplife.services.InputValidator;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -29,6 +33,7 @@ public class RegisterActivity extends AppCompatActivity {
     private EditText passwordEditText;
     private EditText repeatPasswordEditText;
     private Button registerButton;
+    private ProgressBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,7 +48,15 @@ public class RegisterActivity extends AppCompatActivity {
                 String password = passwordEditText.getText().toString();
                 String repeatPassword = repeatPasswordEditText.getText().toString();
 
-                new RegisterAsyncTask(email, username, password).execute();
+                boolean registrationValidation = InputValidator.validateRegister(email, username,
+                        password, repeatPassword);
+                if (registrationValidation) {
+                    new RegisterAsyncTask(email, username, password).execute();
+                }
+
+                Toast invalidRegistrationToast = Toast.makeText(getApplicationContext(),
+                        "Check your input!", Toast.LENGTH_LONG);
+                invalidRegistrationToast.show();
             }
         });
     }
@@ -54,6 +67,7 @@ public class RegisterActivity extends AppCompatActivity {
         this.passwordEditText = findViewById(R.id.passwordEditText);
         this.repeatPasswordEditText = findViewById(R.id.repeatPasswordEditText);
         this.registerButton = findViewById(R.id.registerButton);
+        this.progressBar = findViewById(R.id.progressBar);
     }
 
     private class RegisterAsyncTask extends AsyncTask<Void, Void, Void> {
@@ -66,6 +80,12 @@ public class RegisterActivity extends AppCompatActivity {
             this.email = email;
             this.username = username;
             this.password = password;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            RegisterActivity.this.progressBar.setVisibility(ProgressBar.VISIBLE);
         }
 
         @Override
@@ -116,6 +136,12 @@ public class RegisterActivity extends AppCompatActivity {
             }
 
             return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            RegisterActivity.this.progressBar.setVisibility(ProgressBar.INVISIBLE);
         }
     }
 }
